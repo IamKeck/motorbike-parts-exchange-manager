@@ -1,0 +1,17 @@
+{
+  "name": "motorbike-parts-exchange-manager",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "elm make src/Main.elm --output main.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "elm": "*",
+    "elm-format": "^0.8.5",
+    "elm-test": "*"
+  }
+}
