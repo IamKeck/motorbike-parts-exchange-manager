@@ -291,30 +291,26 @@ inputFormView inputForm =
 partsInputForm : Types.PartsKey -> Html Msg
 partsInputForm key =
     div []
-        [ table []
-            [ tr []
-                [ th [] [ text "日付" ]
-                , td []
-                    [ input
-                        [ HA.type_ "date"
-                        , View.onInputAsNumber (PartsLogDateInput key)
-                        ]
-                        []
-                    ]
-                ]
-            , tr []
-                [ th [] [ text "距離" ]
-                , td []
-                    [ input
-                        [ HA.type_ "number"
-                        , HE.onInput (PartsLogDistanceInput key)
-                        ]
-                        []
-                    ]
+        [ div [ HA.class "field" ]
+            [ label [ HA.class "label" ] [ text "日付" ]
+            , div [ HA.class "control" ]
+                [ input
+                    [ HA.class "input", HA.type_ "date", View.onInputAsNumber (PartsLogDateInput key) ]
+                    []
                 ]
             ]
-        , button [ HE.onClick <| PartsLogRegister key ] [ text "登録" ]
-        , button [ HE.onClick <| DeleteParts key ] [ text "パーツ削除" ]
+        , div [ HA.class "field" ]
+            [ label [ HA.class "label" ] [ text "距離" ]
+            , div [ HA.class "control" ]
+                [ input
+                    [ HA.class "input", HA.type_ "number", HE.onInput (PartsLogDistanceInput key) ]
+                    []
+                ]
+            ]
+        , div [ HA.class "field is-grouped" ]
+            [ div [ HA.class "control" ] [ button [ HA.class "button is-link", HE.onClick <| PartsLogRegister key ] [ text "登録" ] ]
+            , div [ HA.class "control" ] [ button [ HA.class "button is-link is-light", HE.onClick <| DeleteParts key ] [ text "パーツ削除" ] ]
+            ]
         ]
 
 
