@@ -242,57 +242,49 @@ view model =
 inputFormView : NewPartsForm.InputForm -> Html Msg
 inputFormView inputForm =
     div []
-        [ table []
-            [ tbody []
-                [ tr []
-                    [ th [] [ text "タイプ" ]
-                    , td []
-                        [ label []
-                            [ input
-                                [ HA.type_ "radio"
-                                , HA.name "type"
-                                , HE.onClick <| FormTypeChanged NewPartsForm.Both
-                                , HA.checked <| inputForm.type_ == NewPartsForm.Both
-                                ]
-                                []
-                            , text "Both"
-                            ]
+        [ div [ HA.class "field" ]
+            [ label [ HA.class "label" ] [ text "タイプ" ]
+            , div [ HA.class "control" ]
+                [ label [ HA.class "radio" ]
+                    [ input
+                        [ HA.type_ "radio"
+                        , HA.name "type"
+                        , HE.onClick <| FormTypeChanged NewPartsForm.Both
+                        , HA.checked <| inputForm.type_ == NewPartsForm.Both
                         ]
+                        []
+                    , text "走行距離&日数経過"
                     ]
-                ]
-            , tr []
-                [ th [] []
-                , td []
-                    [ label []
-                        [ input
-                            [ HA.type_ "radio"
-                            , HA.name "type"
-                            , HE.onClick <| FormTypeChanged NewPartsForm.Distance
-                            , HA.checked <| inputForm.type_ == NewPartsForm.Distance
-                            ]
-                            []
-                        , text "Distance"
+                , label [ HA.class "radio" ]
+                    [ input
+                        [ HA.type_ "radio"
+                        , HA.name "type"
+                        , HE.onClick <| FormTypeChanged NewPartsForm.Distance
+                        , HA.checked <| inputForm.type_ == NewPartsForm.Distance
                         ]
+                        []
+                    , text "走行距離"
                     ]
-                ]
-            , tr []
-                [ th [] [ text "距離" ]
-                , td [] [ input [ HA.type_ "number", HE.onInput FormDistanceInput ] [], text "km" ]
-                ]
-            , if inputForm.type_ /= NewPartsForm.Distance then
-                tr []
-                    [ th [] [ text "日数" ]
-                    , td [] [ input [ HA.type_ "number", HE.onInput FormDayInput ] [], text "日" ]
-                    ]
-
-              else
-                text ""
-            , tr []
-                [ th [] [ text "パーツ名" ]
-                , td [] [ input [ HA.type_ "text", HE.onInput FormNameInput ] [] ]
                 ]
             ]
-        , button [ HE.onClick RegisterNewParts ] [ text "パーツ登録" ]
+        , div [ HA.class "field" ]
+            [ label [ HA.class "label" ] [ text "距離" ]
+            , div [ HA.class "control" ] [ input [ HA.type_ "number", HE.onInput FormDistanceInput ] [] ]
+            ]
+        , if inputForm.type_ /= NewPartsForm.Distance then
+            div [ HA.class "field" ] [ label [ HA.class "label" ] [ text "日数" ], div [ HA.class "control" ] [ input [ HA.type_ "number", HE.onInput FormDayInput ] [] ] ]
+
+          else
+            text ""
+        , div [ HA.class "field" ]
+            [ label [ HA.class "label" ] [ text "パーツ名" ]
+            , div [ HA.class "control" ] [ input [ HA.type_ "text", HE.onInput FormNameInput ] [] ]
+            ]
+        , div [ HA.class "field" ]
+            [ div [ HA.class "control" ]
+                [ button [ HE.onClick RegisterNewParts, HA.class "button is-link" ] [ text "パーツ登録" ]
+                ]
+            ]
         ]
 
 
