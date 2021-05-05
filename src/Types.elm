@@ -325,3 +325,13 @@ mapHistory f history =
     Dict.toList history
         |> List.sortBy (\( _, h ) -> h.day |> Time.posixToMillis |> negate)
         |> List.map (\( key, h ) -> f key h)
+
+
+partsName : Parts -> String
+partsName parts =
+    case parts of
+        PartsBoth arg ->
+            arg.name
+
+        PartsDistanceOnly arg ->
+            arg.name
