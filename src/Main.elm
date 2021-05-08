@@ -235,7 +235,12 @@ generateHistoryKey partsKey partsElem =
 view : Model -> Html Msg
 view model =
     div []
-        [ h1 [] [ text "Motorbike Parts Replacement Manager" ]
+        [ section [ HA.class "hero is-primary is-small" ]
+            [ div [ HA.class "hero-body" ]
+                [ p [ HA.class "title" ]
+                    [ text "パーツ管理" ]
+                ]
+            ]
         , div []
             [ text "現在の走行距離"
             , input [ HE.onInput DistanceInput ] []
