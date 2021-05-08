@@ -16,6 +16,11 @@ import Util
 import View exposing (onInputAsNumber)
 
 
+type BottomTab
+    = NewParts
+    | PartsLog
+
+
 type alias Model =
     { parts : Types.PartsDict
     , form : NewPartsForm.InputForm
@@ -23,6 +28,7 @@ type alias Model =
     , distance : Maybe Int
     , now : Maybe Time.Posix
     , selectedParts : Maybe Types.PartsKey
+    , currentTab : BottomTab
     }
 
 
@@ -42,6 +48,7 @@ type Msg
     | GotTime Time.Posix
     | GotPartsLogKey Types.PartsKey Types.PartsBothHistoryElem Types.HistoryKey
     | SelectPartsTab Types.PartsKey
+    | SelectBottomTab BottomTab
 
 
 type alias Flags =
@@ -60,6 +67,7 @@ init savedDictJson =
             , distance = Nothing
             , now = Nothing
             , selectedParts = Nothing
+            , currentTab = PartsLog
             , form =
                 { name = ""
                 , type_ = NewPartsForm.Both
@@ -221,6 +229,9 @@ update msg model =
         SelectPartsTab key ->
             ( { model | selectedParts = Just key }, Cmd.none )
 
+        SelectBottomTab tab ->
+            ( { model | currentTab = tab }, Cmd.none )
+
 
 generatePartsKey : Types.Parts -> Cmd Msg
 generatePartsKey parts =
@@ -234,26 +245,35 @@ generateHistoryKey partsKey partsElem =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ section [ HA.class "hero is-primary is-small" ]
+    div [ HA.class "mainContainer" ]
+        [ section [ HA.class "hero is-primary is-small headerSection" ]
             [ div [ HA.class "hero-body" ]
                 [ p [ HA.class "title" ]
                     [ text "パーツ管理" ]
                 ]
             ]
-        , div []
-            [ text "現在の走行距離"
-            , input [ HE.onInput DistanceInput ] []
-            , text "km"
-            ]
-        , inputFormView model.form
-        , case model.selectedParts of
-            Nothing ->
-                text ""
+        , section [ HA.class "contentSection" ]
+            [ div []
+                [ text "現在の走行距離"
+                , input [ HE.onInput DistanceInput ] []
+                , text "km"
+                ]
+            , case model.currentTab of
+                NewParts ->
+                    inputFormView model.form
 
-            Just selectedParts ->
-                partsTab selectedParts model.parts
-        , partsView model.distance model.now model.selectedParts model.parts
+                PartsLog ->
+                    case model.selectedParts of
+                        Nothing ->
+                            text ""
+
+                        Just selectedParts ->
+                            div []
+                                [ partsTab selectedParts model.parts
+                                , partsView model.distance model.now model.selectedParts model.parts
+                                ]
+            ]
+        , section [ HA.class "footerSection" ] [ bottomTabView model.currentTab ]
         ]
 
 
@@ -425,6 +445,18 @@ partsTab selectedKey dict =
                         ]
                 )
                 (Dict.toList dict)
+        ]
+
+
+bottomTabView : BottomTab -> Html Msg
+bottomTabView currentTab =
+    div [ HA.class "tabs is-boxed" ]
+        [ ul []
+            [ li [ HA.classList [ ( "is-active", currentTab == PartsLog ) ] ]
+                [ a [ HE.onClick <| SelectBottomTab PartsLog ] [ text "log" ] ]
+            , li [ HA.classList [ ( "is-active", currentTab == NewParts ) ] ]
+                [ a [ HE.onClick <| SelectBottomTab NewParts ] [ text "new parts" ] ]
+            ]
         ]
 
 
