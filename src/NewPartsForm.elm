@@ -49,6 +49,7 @@ day_ : Decoder.Decoder InputForm String Int
 day_ =
     Decoder.int "must be string"
         |> Decoder.assert (Decoder.minBound "greater than 1" 1)
+        |> Decoder.map Types.toDay
         |> Decoder.lift .day
 
 

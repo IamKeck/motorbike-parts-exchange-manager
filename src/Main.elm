@@ -25,7 +25,6 @@ type alias Model =
     { parts : Types.PartsDict
     , form : NewPartsForm.InputForm
     , partsLogForms : Dict.Dict Types.PartsKey PartsLogForm.PartsLogForm
-    , distance : Maybe Int
     , now : Maybe Time.Posix
     , selectedParts : Maybe Types.PartsKey
     , currentTab : BottomTab
@@ -44,7 +43,6 @@ type Msg
     | PartsLogDistanceInput Types.PartsKey String
     | PartsLogRegister Types.PartsKey
     | DeleteParts Types.PartsKey
-    | DistanceInput String
     | GotTime Time.Posix
     | GotPartsLogKey Types.PartsKey Types.PartsBothHistoryElem Types.HistoryKey
     | SelectPartsTab Types.PartsKey
@@ -64,7 +62,6 @@ init savedDictJson =
         initialModel =
             { parts = Dict.empty
             , partsLogForms = Dict.empty
-            , distance = Nothing
             , now = Nothing
             , selectedParts = Nothing
             , currentTab = PartsLog
@@ -220,9 +217,6 @@ update msg model =
             in
             ( { model | parts = newDict }, savePartsDict <| Types.saveParts newDict )
 
-        DistanceInput km ->
-            ( { model | distance = String.toInt km }, Cmd.none )
-
         GotTime time ->
             ( { model | now = Just time }, Cmd.none )
 
@@ -253,12 +247,7 @@ view model =
                 ]
             ]
         , section [ HA.class "contentSection" ]
-            [ div []
-                [ text "現在の走行距離"
-                , input [ HE.onInput DistanceInput ] []
-                , text "km"
-                ]
-            , case model.currentTab of
+            [ case model.currentTab of
                 NewParts ->
                     inputFormView model.form
 
@@ -270,7 +259,7 @@ view model =
                         Just selectedParts ->
                             div []
                                 [ partsTab selectedParts model.parts
-                                , partsView model.distance model.now model.selectedParts model.parts
+                                , partsView model.now model.selectedParts model.parts
                                 ]
             ]
         , section [ HA.class "footerSection" ] [ bottomTabView model.currentTab ]
@@ -338,7 +327,7 @@ partsInputForm key =
                 ]
             ]
         , div [ HA.class "field" ]
-            [ label [ HA.class "label" ] [ text "距離" ]
+            [ label [ HA.class "label" ] [ text "走行距離(km)" ]
             , div [ HA.class "control" ]
                 [ input
                     [ HA.class "input", HA.type_ "number", HE.onInput (PartsLogDistanceInput key) ]
@@ -373,8 +362,8 @@ partsLogList hist =
         ]
 
 
-partsView : Maybe Int -> Maybe Time.Posix -> Maybe Types.PartsKey -> Types.PartsDict -> Html Msg
-partsView km now mayKey partsDict =
+partsView : Maybe Time.Posix -> Maybe Types.PartsKey -> Types.PartsDict -> Html Msg
+partsView now mayKey partsDict =
     let
         keyToParts key =
             Dict.get key partsDict |> Maybe.map (\parts -> ( key, parts ))
@@ -387,13 +376,13 @@ partsView km now mayKey partsDict =
             case parts of
                 Types.PartsBoth arg ->
                     div []
-                        [ partsAlertView parts km now
+                        [ partsAlertView parts now
                         , partsInputForm key
                         , p []
                             [ text <|
                                 String.fromInt arg.distance
                                     ++ "kmもしくは"
-                                    ++ String.fromInt arg.day
+                                    ++ (arg.day |> Types.fromDay |> String.fromInt)
                                     ++ "日ごとに交換"
                             ]
                         , partsLogList arg.history
@@ -412,25 +401,28 @@ partsView km now mayKey partsDict =
                         ]
 
 
-partsAlertView : Types.Parts -> Maybe Int -> Maybe Time.Posix -> Html Msg
-partsAlertView parts km now =
+partsAlertView : Types.Parts -> Maybe Time.Posix -> Html Msg
+partsAlertView parts now =
     case now of
         Nothing ->
             text ""
 
         Just now_ ->
-            case Types.partsStatus (Maybe.withDefault 0 km) now_ parts of
-                Types.Ok ->
-                    div [] [ text "交換不要" ]
+            case Types.partsStatus now_ parts of
+                Types.OkDistance d ->
+                    div [] [ text <| "あと" ++ Util.withSuffix "km" d ++ "で交換" ]
+
+                Types.OkBoth e ->
+                    div []
+                        [ text <|
+                            Util.withSuffix "km" e.distance
+                                ++ "もしくは"
+                                ++ Types.showDate e.day
+                                ++ "に交換"
+                        ]
 
                 Types.ReplaceRequired ->
                     div [] [ text "要交換" ]
-
-                Types.AlmostReplaceRequiredDistance dist ->
-                    div [] [ text <| "あと" ++ String.fromInt dist ++ "kmで交換" ]
-
-                Types.AlmostReplaceRequiredDay day ->
-                    div [] [ text <| "あと" ++ String.fromInt day ++ "日で交換" ]
 
 
 partsTab : Types.PartsKey -> Types.PartsDict -> Html Msg

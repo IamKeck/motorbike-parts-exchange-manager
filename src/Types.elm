@@ -67,72 +67,40 @@ type alias PartsDayOnlyHistory =
 
 
 type Status
-    = AlmostReplaceRequiredDistance Distance
-    | AlmostReplaceRequiredDay Day
-    | ReplaceRequired
-    | Ok
+    = ReplaceRequired
+    | OkDistance Distance
+    | OkBoth { day : Date, distance : Distance }
 
 
-almostDistance : Distance
-almostDistance =
-    200
-
-
-
--- 60days in milliseconds
-
-
-almostDay : Distance
-almostDay =
-    60 * 24 * 60 * 60 * 1000
-
-
-partsStatus : Distance -> Time.Posix -> Parts -> Status
-partsStatus currentDistance now parts =
+partsStatus : Time.Posix -> Parts -> Status
+partsStatus now parts =
     case parts of
         PartsDistanceOnly record ->
             case getLatestHistory record.history of
                 Nothing ->
-                    Ok
+                    OkDistance record.distance
 
                 Just latestHistory ->
-                    let
-                        diff =
-                            currentDistance - latestHistory.distance
-                    in
-                    if diff >= record.distance then
-                        ReplaceRequired
-
-                    else if (diff - record.distance) >= almostDistance then
-                        AlmostReplaceRequiredDistance <| diff - record.distance
-
-                    else
-                        Ok
+                    OkDistance <| latestHistory.distance + record.distance
 
         PartsBoth record ->
             case getLatestHistory record.history of
                 Nothing ->
-                    Ok
+                    OkBoth <| { day = addDay record.day now, distance = record.distance }
 
                 Just latestHistory ->
                     let
-                        diff =
-                            currentDistance - latestHistory.distance
-
-                        diffD =
-                            Time.posixToMillis now - Time.posixToMillis latestHistory.day
+                        diffDay =
+                            Debug.log "diffD" <| Time.posixToMillis now - Time.posixToMillis latestHistory.day
                     in
-                    if diff >= record.distance || diffD >= record.day then
+                    if diffDay >= record.day then
                         ReplaceRequired
 
-                    else if (diff - record.distance) >= almostDistance then
-                        AlmostReplaceRequiredDistance <| diff - record.distance
-
-                    else if (diffD - record.day) >= almostDay then
-                        AlmostReplaceRequiredDay <| diffD - record.day
-
                     else
-                        Ok
+                        OkBoth
+                            { day = addDay record.day latestHistory.day
+                            , distance = record.distance + latestHistory.distance
+                            }
 
 
 generatePartsKey : Generator PartsKey
@@ -335,3 +303,18 @@ partsName parts =
 
         PartsDistanceOnly arg ->
             arg.name
+
+
+addDay : Day -> Date -> Date
+addDay day date =
+    Time.posixToMillis date + day |> Time.millisToPosix
+
+
+toDay : Int -> Day
+toDay day =
+    day * 24 * 3600 * 1000
+
+
+fromDay : Day -> Int
+fromDay day =
+    day // (24 * 3600 * 1000)
