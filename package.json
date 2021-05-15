@@ -10,8 +10,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/workbox-build": "^5.0.0",
     "elm": "*",
     "elm-format": "^0.8.5",
-    "elm-test": "*"
+    "elm-test": "*",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.4",
+    "workbox-build": "^6.1.5"
   }
 }

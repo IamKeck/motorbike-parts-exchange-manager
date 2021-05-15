@@ -6,24 +6,32 @@
     <link rel="stylesheet" href="/main.css">
 </head>
 <body>
-    <div id="app"></div>
-    <script src="main.js">
-    </script>
-    <script>
-        const storageKey = "parts-manager";
-        const savedDict = localStorage.getItem(storageKey);
-        const container = document.getElementById("app");
-        const app = Elm.Main.init(
-            {
-                node: container,
-                flags: savedDict || ""
-            }
-        );
-        app.ports.savePartsDict.subscribe((partsDict) => {
-            console.log(partsDict);
-            localStorage.setItem(storageKey, partsDict);
+<div id="app"></div>
+<script>
+    if ('serviceWorker' in navigator) {
+        // Use the window load event to keep the page load performant
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js');
         });
-    </script>
+    }
+</script>
+<script src="main.js">
+</script>
+<script>
+    const storageKey = "parts-manager";
+    const savedDict = localStorage.getItem(storageKey);
+    const container = document.getElementById("app");
+    const app = Elm.Main.init(
+        {
+            node: container,
+            flags: savedDict || ""
+        }
+    );
+    app.ports.savePartsDict.subscribe((partsDict) => {
+        console.log(partsDict);
+        localStorage.setItem(storageKey, partsDict);
+    });
+</script>
 
 </body>
 </html>
