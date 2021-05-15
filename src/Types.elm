@@ -62,10 +62,6 @@ type alias PartsBothHistory =
     Dict.Dict HistoryKey PartsBothHistoryElem
 
 
-type alias PartsDayOnlyHistory =
-    List Time.Posix
-
-
 type Status
     = ReplaceRequired
     | OkDistance Distance
@@ -288,7 +284,7 @@ addNewHistory =
     Dict.insert
 
 
-mapHistory : (PartsKey -> PartsBothHistoryElem -> a) -> PartsBothHistory -> List a
+mapHistory : (HistoryKey -> PartsBothHistoryElem -> a) -> PartsBothHistory -> List a
 mapHistory f history =
     Dict.toList history
         |> List.sortBy (\( _, h ) -> h.day |> Time.posixToMillis |> negate)
@@ -318,3 +314,13 @@ toDay day =
 fromDay : Day -> Int
 fromDay day =
     day // (24 * 3600 * 1000)
+
+
+deleteHistory : Parts -> HistoryKey -> Parts
+deleteHistory parts historyKey =
+    case parts of
+        PartsBoth e ->
+            PartsBoth { e | history = Dict.remove historyKey e.history }
+
+        PartsDistanceOnly e ->
+            PartsDistanceOnly { e | history = Dict.remove historyKey e.history }

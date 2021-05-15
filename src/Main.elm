@@ -47,6 +47,7 @@ type Msg
     | GotPartsLogKey Types.PartsKey Types.PartsBothHistoryElem Types.HistoryKey
     | SelectPartsTab Types.PartsKey
     | SelectBottomTab BottomTab
+    | DeleteHistory Types.PartsKey Types.HistoryKey
 
 
 type alias Flags =
@@ -226,6 +227,19 @@ update msg model =
         SelectBottomTab tab ->
             ( { model | currentTab = tab }, Cmd.none )
 
+        DeleteHistory partsKey historyKey ->
+            case Dict.get partsKey model.parts of
+                Nothing ->
+                    ( model, Cmd.none )
+
+                Just parts ->
+                    ( { model
+                        | parts =
+                            Dict.insert partsKey (Types.deleteHistory parts historyKey) model.parts
+                      }
+                    , Cmd.none
+                    )
+
 
 generatePartsKey : Types.Parts -> Cmd Msg
 generatePartsKey parts =
@@ -341,21 +355,23 @@ partsInputForm key =
         ]
 
 
-partsLogList : Types.PartsBothHistory -> Html Msg
-partsLogList hist =
+partsLogList : Types.PartsKey -> Types.PartsBothHistory -> Html Msg
+partsLogList partsKey hist =
     table [ HA.class "table" ]
         [ thead []
             [ tr []
                 [ th [] [ text "日付" ]
                 , th [] [ text "走行距離" ]
+                , th [] []
                 ]
             ]
         , tbody [] <|
             Types.mapHistory
-                (\_ his ->
+                (\historyKey his ->
                     tr []
                         [ td [] [ text <| Types.showDate <| his.day ]
                         , td [] [ text <| Util.withSuffix "km" <| his.distance ]
+                        , td [] [ a [ HE.onClick <| DeleteHistory partsKey historyKey ] [ text "x" ] ]
                         ]
                 )
                 hist
@@ -381,11 +397,11 @@ partsView now mayKey partsDict =
                         , p []
                             [ text <|
                                 String.fromInt arg.distance
-                                    ++ "kmもしくは"
+                                    ++ "kmごともしくは"
                                     ++ (arg.day |> Types.fromDay |> String.fromInt)
                                     ++ "日ごとに交換"
                             ]
-                        , partsLogList arg.history
+                        , partsLogList key arg.history
                         ]
 
                 Types.PartsDistanceOnly arg ->
@@ -397,7 +413,7 @@ partsView now mayKey partsDict =
                                 String.fromInt arg.distance
                                     ++ "kmごとに交換"
                             ]
-                        , partsLogList arg.history
+                        , partsLogList key arg.history
                         ]
 
 
