@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "elm make src/Main.elm --output dist/main.js"
+    "build:elm": "elm make src/Main.elm --output dist/main.js",
+    "build:sw": "ts-node src/sw.ts",
+    "build": "npm run build:elm && npm run build:sw"
   },
   "author": "",
   "license": "ISC",

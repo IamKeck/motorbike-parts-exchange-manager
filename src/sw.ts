@@ -10,7 +10,7 @@ const swDist = path.join(distDir, "sw.js");
         cacheId: cacheId,
         swDest: swDist,
         globDirectory: "./dist/",
-        globPatterns: ["**/*.{html,js,css}"],
+        globPatterns: ["**/*.{html,js,css,png}"],
         runtimeCaching: []
     });
     for (const warning of result.warnings) {
